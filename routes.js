@@ -7,50 +7,44 @@ const router = express.Router();
 const db_connection_string =  process.env.DB_CONNECTION_STRING;
 
 //Get
-//Get: concerts
+// GET: /api/concerts/
 router.get('/', async (req, res) => {
 
-    // get collection of objects from the database
     await sql.connect(db_connection_string);
 
-    const result = await sql.query`SELECT * FROM concerts`;
-    //add table here
+    const result = await sql.query`
+        SELECT a.[ConcertId], a.[Title], a.[Description], a.[FileName], a.[DateAdded], a.[EventDate], a.[Location], a.[Owner], b.[CategoryId], b.[Name], AS CategoryName, b.[Description] AS CategoryDescription
+        FROM [dbo].[Concert] a
+        INNER JOIN [dbo].[Category] b
+        ON a.[CategoryId] = b.[CategoryId]
+        ORDER BY a.[EventDate] DESC`;
 
     res.json(result.recordset);
-
-    const photos = [
-        {
-            id: '1',
-            title: 'NIN',
-            description: 'NIN canadian tour',
-            url: 'https://example.com/nin.jpg'
-        },
-        {
-            id: '1',
-            title: 'Metallica' ,
-            description: 'Metallica halifax concert',
-            url: 'https://example.com/metallica.jpg'
-        }
-    ]
-    
-    // send the array as JSON
-    res.json(concerts);
 });
 
-//get /api/:id
-router.get('concerts/:id', (req, res) => {
-     const id = req.params.id; 
+// GET: /api/concerts/:id
+router.get('/:id', async (req, res) => {
+    const id = req.params.id;
 
-      const photo = {
-        id: id,
-        title: 'NIN',
-        description: 'NIN canadian tour',
-        url:  'https://example.com/nin.jpg'
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid concert ID. It must be a number.' });
     }
 
-    //send object as json
-    res.json(concert);
+    // Get a single concert object from the database
+    await sql.connect(db_connection_string);
 
+    const result = await sql.query`
+        SELECT a.[ConcertId], a.[Title], a.[Description], a.[FileName], a.[DateAdded], a.[EventDate], a.[Location], a.[Owner], b.[CategoryId], b.[Name], AS CategoryName, b.[Description] AS CategoryDescription
+        FROM [dbo].[Concert] a
+        INNER JOIN [dbo].[Category] b
+        ON a.[CategoryId] = b.[CategoryId]
+        WHERE a.[ConcertId] = ${id}`;
+
+    if (result.recordset.length === 0) {
+        return res.status(404).json({ error: 'Concert not found.' });
+    }
+
+    res.json(result.recordset);
 });
 
 export default router;
