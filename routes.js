@@ -1,12 +1,23 @@
 import express from 'express';
+import sql from 'mssql';
+import 'dotenv/config'
 
 const router = express.Router();
 
+const db_connection_string =  process.env.DB_CONNECTION_STRING;
+
 //Get
 //Get: concerts
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
 
-    // create an array 
+    // get collection of objects from the database
+    await sql.connect(db_connection_string);
+
+    const result = await sql.query`SELECT * FROM concerts`;
+    //add table here
+
+    res.json(result.recordset);
+
     const photos = [
         {
             id: '1',
