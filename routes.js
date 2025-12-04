@@ -70,7 +70,7 @@ router.post('/purchases', async (req, res) => {
     const totalAmount = Number(body.totalAmount);
 
     if (!concertId || isNaN(concertId)) {
-        return res.status(400).json({ error: 'concertId is required and must be a number' });
+        return res.status(400).json({ error: 'concertId is required' });
     }
     if (!quantity || quantity <= 0) {
         return res.status(400).json({ error: 'quantity must be greater than zero' });
